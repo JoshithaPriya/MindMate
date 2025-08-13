@@ -43,20 +43,20 @@ export default function StoreInfoPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/store-info", {
+      const response = await fetch(" http://127.0.0.1:8000/store_patient_data", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username,
-          info: info.trim(),
+          metadata:{
+            "patient_id":localStorage.getItem("mindmate-username")
+          },
+          text: info.trim(),
         }),
       })
 
-      if (!response.ok) {
-        throw new Error("Failed to save information")
-      }
+      
 
       setShowSuccess(true)
       setInfo("")
