@@ -18,7 +18,7 @@ export default function IntroPage() {
     const timer3 = setTimeout(() => setShowSubtitle(true), 1000)
     const timer4 = setTimeout(() => setShowFeatures(true), 1400)
     const timer5 = setTimeout(() => setShowButton(true), 1800)
-
+   
     return () => {
       clearTimeout(timer1)
       clearTimeout(timer2)
@@ -88,6 +88,12 @@ export default function IntroPage() {
             className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-12 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
           >
             Login
+          </Button>
+          <Button
+            onClick={() => router.push("/Signin")}
+            className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-12 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            Signup
           </Button>
         </div>
       </div>

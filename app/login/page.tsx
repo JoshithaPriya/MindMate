@@ -1,23 +1,26 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { verify } from "../mongodb/createuser"
 
 export default function LoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
   const router = useRouter()
   const { toast } = useToast()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    setErrorMessage("") // clear old error
 
     if (!username.trim()) {
       toast({
@@ -38,25 +41,24 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username: username.trim(), password: password.trim() }),
-      })
+       const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
 
-      if (response.ok) {
-        // Store username in localStorage for now
+    const data = await res.json();
+      const response = data.success
+      if (response) {
         localStorage.setItem("mindmate-username", username.trim())
         router.push("/about")
       } else {
-        throw new Error("Login failed")
+        setErrorMessage("Invalid username or password")
       }
     } catch (error) {
       toast({
-        title: "Login failed",
-        description: "Please check your credentials and try again",
+        title: "Login error",
+        description: "Something went wrong while trying to log in",
         variant: "destructive",
       })
     } finally {
@@ -98,6 +100,11 @@ export default function LoginPage() {
                 required
               />
             </div>
+
+            {errorMessage && (
+              <p className="text-red-500 text-sm text-center">{errorMessage}</p>
+            )}
+
             <Button
               type="submit"
               className="w-full h-12 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
@@ -111,3 +118,4 @@ export default function LoginPage() {
     </div>
   )
 }
+
