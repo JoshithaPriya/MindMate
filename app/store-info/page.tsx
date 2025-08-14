@@ -8,8 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { ArrowLeft, Save, Check } from "lucide-react"
-
+import { ArrowLeft, Save, Check, Trash } from "lucide-react"
 export default function StoreInfoPage() {
   const [info, setInfo] = useState("")
   const [username, setUsername] = useState("")
@@ -81,6 +80,50 @@ export default function StoreInfoPage() {
     }
   }
 
+   const handleDelete = async () => {
+  const confirmed = window.confirm("Are you sure you want to delete all of your stored information? This action cannot be undone.");
+
+  if (!confirmed) return;
+
+  setIsLoading(true);
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/delete_patient_data", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        metadata: {
+          patient_id: localStorage.getItem("mindmate-username"),
+        },
+      }),
+    });
+
+    const data = response;
+
+    if (response.ok) {
+      toast({
+        title: "Information deleted successfully!",
+        description:  "All your stored information has been removed.",
+      });
+    } else {
+      toast({
+        title: "Failed to delete information",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    }
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: "Failed to connect to the server. Please try again later.",
+      variant: "destructive",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
       <div className="max-w-2xl mx-auto">
@@ -131,25 +174,39 @@ Examples:
                 />
               </div>
 
-              {/* Save Button */}
-              <Button
-                type="submit"
-                disabled={!info.trim() || isLoading}
-                className="w-full h-12 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                {isLoading ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Saving...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-2">
-                    <Save className="w-5 h-5" />
-                    <span>Save Information</span>
-                  </div>
-                )}
-              </Button>
-            </form>
+              <div className="flex space-x-4">
+  {/* Save Button */}
+  <Button
+    type="submit"
+    disabled={!info.trim() || isLoading}
+    className="flex-1 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+  >
+    {isLoading ? (
+      <div className="flex items-center space-x-2">
+        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        <span>Saving...</span>
+      </div>
+    ) : (
+      <div className="flex items-center space-x-2">
+        <Save className="w-5 h-5" />
+        <span>Save Information</span>
+      </div>
+    )}
+  </Button>
+
+{/* Delete Button */}
+<Button
+  type="button"
+  onClick={handleDelete}
+  className="flex-1 h-12 bg-red-500 hover:bg-red-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+>
+  <div className="flex items-center space-x-2">
+    <Trash className="w-5 h-5" />
+    <span>Delet all Information</span>
+  </div>
+</Button>
+</div>
+</form>
 
             {/* Success Message */}
             {showSuccess && (

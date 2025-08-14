@@ -8,6 +8,8 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+  },devIndicators: {
+    buildActivity: false, // this hides the bottom-left Next.js icon in dev mode
   },
 }
 

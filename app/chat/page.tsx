@@ -54,56 +54,60 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault()
+const handleSendMessage = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!inputValue.trim() || isLoading) return;
 
-    if (!inputValue.trim() || isLoading) return
+  const userMessage: Message = {
+    id: Date.now().toString(),
+    text: inputValue.trim(),
+    isUser: true,
+    timestamp: new Date(),
+  };
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: inputValue.trim(),
-      isUser: true,
+  setMessages((prev) => [...prev, userMessage]);
+  setInputValue("");
+  setIsLoading(true);
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/generatePatientDetails", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: userMessage.text, id: localStorage.getItem("mindmate-username") }),
+    });
+
+    const data = await response.json();
+    const botText = data.response || "I'm sorry, I couldn't process that request.";
+
+    // Create a new message with empty text
+    const botMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      text: "",
+      isUser: false,
       timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, botMessage]);
+
+    // Append characters one by one
+    for (let i = 0; i < botText.length; i++) {
+      await new Promise((r) => setTimeout(r, 30)); // adjust typing speed here
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === botMessage.id ? { ...m, text: m.text + botText[i] } : m
+        )
+      );
     }
-
-    setMessages((prev) => [...prev, userMessage])
-    setInputValue("")
-    setIsLoading(true)
-
-    try {
-      const response = await fetch("http://127.0.0.1:8000/generatePatientDetails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          prompt: userMessage.text,
-          id:localStorage.getItem("mindmate-username")
-        }),
-      })
-
-      
-
-      const data = await response.json()
-
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: data.response || "I'm sorry, I couldn't process that request.",
-        isUser: false,
-        timestamp: new Date(),
-      }
-
-      setMessages((prev) => [...prev, botMessage])
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: "Failed to send message. Please try again.",
+      variant: "destructive",
+    });
+  } finally {
+    setIsLoading(false);
   }
+};
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
